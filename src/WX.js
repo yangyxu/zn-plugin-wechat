@@ -48,7 +48,9 @@ zn.define([
                 for(var key in queryString){
                     _value = queryString[key];
                     if(_value!==null && _value!==undefined && _value.indexOf('{')!=-1 && _value.indexOf('}')!=-1){
-                        queryString[key] = _value.format(_values);
+                        if(_value&&_values){
+                            queryString[key] = _value.format(_values);
+                        }
                     }
                 }
 
