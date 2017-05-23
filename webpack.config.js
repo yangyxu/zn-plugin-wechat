@@ -4,15 +4,14 @@ var path = require('path');
 module.exports = {
     context: path.join(__dirname, 'web', 'src'),
     entry: {
-        "index": ['./entry.js'],
-        "index.min": ['./entry.js']
+        "index": ['./entry.js']
     },
     externals: {
         "react": "React",
         "react-dom": "ReactDOM"
     },
     output: {
-        path: path.join(__dirname, 'web', 'www', 'dist'),
+        path: path.join(__dirname, 'web', 'dist'),
         filename: '[name].js'
     },
     module: {
@@ -32,7 +31,10 @@ module.exports = {
                 exclude: /(node_modules|bower_components)/,
                 loader: 'babel',
                 query: {
-                    presets: ['es2015','react']
+                    presets: ['es2015','react'],
+                    plugins:[
+                        "transform-remove-strict-mode"
+                    ]
                 }
             },
             {
@@ -51,7 +53,6 @@ module.exports = {
     },
     plugins: [
         new webpack.optimize.UglifyJsPlugin({
-            include: /\.min/,
             compress: {
                 warnings: false
             }
