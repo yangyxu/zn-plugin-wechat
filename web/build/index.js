@@ -1,7 +1,5 @@
-module.exports = zn.react.loadPaths({
-    view: './view/index.js',
-    routers: './routers.js',
-    tools: './tools.js'
-}, function (path) {
-    return require(path);
+zn.react.znwechat = {};
+zn.deepEachObject({}, function (value) {
+  return require(value);
 });
+module.exports = zn.react.extendPath('/znwechat/', require('./page/index.js'));

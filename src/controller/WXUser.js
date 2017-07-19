@@ -21,7 +21,6 @@ zn.define(function () {
                     zn.wx.accessTokenRequest('sns.getUserOpenId', {
                         code: request.getValue('code')||null
                     }).then(function (data){
-                        console.log(data);
                         response.success(data);
                     });
                 }
