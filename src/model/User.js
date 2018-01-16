@@ -1,12 +1,17 @@
 zn.define(function () {
 
-    var model = zn.db.common.model;
-
-    return zn.Model("zn_wx_user", {
-        mixins: [
-            model.Base
-        ],
+    return zn.Class("zn.plugin.wechat.model.user", {
         properties: {
+            subscribe: {
+                value: null,
+                type: ['int', 4],
+                default: 0
+            },
+            groupid: {
+                value: null,
+                type: ['int', 4],
+                default: 0
+            },
             openid: {
                 value: null,
                 type: ['varchar', 100],
@@ -19,30 +24,15 @@ zn.define(function () {
             },
             sex: {
                 value: null,
-                type: ['int', 10],
+                type: ['int', 4],
                 default: 0
             },
-            name: {
+            language: {
                 value: null,
                 type: ['varchar', 100],
                 default: ''
             },
-            password: {
-                value: null,
-                type: ['varchar', 100],
-                default: '1234'
-            },
-            email: {
-                value: null,
-                type: ['varchar', 50],
-                default: ''
-            },
-            phone: {
-                value: null,
-                type: ['varchar', 20],
-                default: ''
-            },
-            province: {
+            city: {
                 value: null,
                 type: ['varchar', 100],
                 default: ''
@@ -52,17 +42,37 @@ zn.define(function () {
                 type: ['varchar', 100],
                 default: ''
             },
-            address: {
-                value: null,
-                type: ['varchar', 250],
-                default: ''
-            },
-            avatarImg: {
+            country: {
                 value: null,
                 type: ['varchar', 100],
                 default: ''
             },
-            lastLoginTime: {
+            headimgurl: {
+                value: null,
+                type: ['varchar', 500],
+                default: ''
+            },
+            subscribe_time: {
+                value: null,
+                type: ['varchar', 100],
+                default: ''
+            },
+            unionid: {
+                value: null,
+                type: ['varchar', 100],
+                default: ''
+            },
+            remark: {
+                value: null,
+                type: ['varchar', 100],
+                default: ''
+            },
+            tagid_list: {
+                value: null,
+                type: ['varchar', 100],
+                default: ''
+            },
+            last_login_time: {
                 value: null,
                 type: ['datetime'],
                 format: "date_format({},'%Y-%c-%d %h:%i:%s')",
@@ -71,4 +81,4 @@ zn.define(function () {
         }
     });
 
-})
+});

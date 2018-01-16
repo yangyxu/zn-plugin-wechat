@@ -1,5 +1,5 @@
 zn.define({
-    deploy: 'znwechat',
+    deploy: 'zn.plugin.wechat',
     models: '/src/model/',
     controllers: '/src/controller/',
     wx: {

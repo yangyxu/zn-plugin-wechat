@@ -1,0 +1,10 @@
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'ID', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'AppID', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'AppSecret', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'CallBackUrl', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'Token', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'EncodingAESKey', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.config', 'WXHOST', 'https://api.weixin.qq.com/cgi-bin');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.share', 'ID', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.share', 'AppID', '');
+insert into zn_plugin_admin_config (_id, _key, _value) values ('zn.plugin.wechat.authorize', 'url', '');

@@ -1,3 +1,6 @@
 zn.define([
-    './WXUser'
+    './ZNPluginWechatConfig',
+    './ZNPluginWechatUser',
+    './ZNPluginWechatUserCode',
+    './ZNPluginWechatUserLoginLog'
 ]);
