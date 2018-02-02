@@ -2,7 +2,7 @@ var _exports = {},
     _export = null,
     _path = null;
 
-['setting'].forEach(function (path){
+['setting', 'user'].forEach(function (path){
     _path = './' + path + '/index.js';
     _export = require(_path);
     for(var key in _export){
@@ -10,7 +10,10 @@ var _exports = {},
     }
 });
 
-['UserList', 'UserLoginLog'].forEach(function (path){
+[
+    'AdminUserAuth',
+    'AdminUserLoginWithQRCode'
+].forEach(function (path){
     _path = './' + path;
     _exports[(path).toLowerCase()] = require(_path);
 });

@@ -1,10 +1,5 @@
 var React = require('react');
 module.exports = React.createClass({
-	getDefaultProps: function () {
-		return {
-			model: 'ZNPluginWechatUserLoginLog'
-		};
-	},
 	getInitialState: function () {
 		return {
 			data: zn.store.post('/zn.plugin.admin/model/paging', {

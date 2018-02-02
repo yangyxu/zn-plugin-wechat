@@ -1,5 +1,7 @@
 zn.define([
     './WX',
     './WXUser',
-    './WXTemplate'
+    './WXTemplate',
+    './ZNPluginAdminUser',
+    './ZNPluginWechatUser'
 ]);

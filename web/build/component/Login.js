@@ -1,7 +1,8 @@
 var React = require('react');
 var TOKEN_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN";
+var HASH_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_HASH";
 module.exports = React.createClass({
-	displayName: 'exports',
+	displayName: "exports",
 
 	getInitialState: function getInitialState() {
 		return {
@@ -28,6 +29,9 @@ module.exports = React.createClass({
 		}
 	},
 	__parseHash: function __parseHash() {
+		if (window.location.hash) {
+			zn.react.session.setKeyValue(HASH_KEY, window.location.hash);
+		}
 		var _searchs = window.location.href.split('?'),
 		    _temp = [],
 		    _self = this,
@@ -60,10 +64,15 @@ module.exports = React.createClass({
 		}.bind(this));
 	},
 	__doAuth: function __doAuth(token) {
+		var _hash = zn.react.session.getKeyValue(HASH_KEY);
 		zn.react.session.setKeyValue(TOKEN_KEY, token);
 		this.__initWXJSSDKConfig();
 		this.setState({ token: token });
-		this.props.onAuthSuccess && this.props.onAuthSuccess(token);
+		if (_hash) {
+			window.location.hash = _hash;
+			zn.react.session.removeKeyValue(HASH_KEY);
+		}
+		this.props.onAuthSuccess && this.props.onAuthSuccess(token, _hash);
 	},
 	__reLogin: function __reLogin() {
 		if (this.state.debug) {
@@ -86,15 +95,15 @@ module.exports = React.createClass({
 	},
 	render: function render() {
 		if (!this.state.token) {
-			return React.createElement(zn.react.DataLoader, { loader: 'timer', content: '\u8BA4\u8BC1\u4E2D...' });
+			return React.createElement(zn.react.DataLoader, { loader: "timer", content: "\u8BA4\u8BC1\u4E2D..." });
 		}
 		if (this.state.loading) {
-			return React.createElement(zn.react.DataLoader, { loader: 'timer', content: '\u767B\u9646\u4E2D...' });
+			return React.createElement(zn.react.DataLoader, { loader: "timer", content: "\u767B\u9646\u4E2D..." });
 		} else {
 			return React.createElement(
-				'div',
-				{ className: 'zn-plugin-wechat-login' },
-				'\u8BA4\u8BC1\u6210\u529F'
+				"div",
+				{ className: "zn-plugin-wechat-login" },
+				"\u8BA4\u8BC1\u6210\u529F"
 			);
 		}
 	}

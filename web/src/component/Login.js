@@ -1,5 +1,6 @@
 var React = require('react');
 var TOKEN_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN";
+var HASH_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_HASH";
 module.exports = React.createClass({
 	getInitialState: function (){
 		return {
@@ -26,6 +27,9 @@ module.exports = React.createClass({
 		}
 	},
 	__parseHash: function (){
+		if(window.location.hash){
+			zn.react.session.setKeyValue(HASH_KEY, window.location.hash);
+		}
 		var _searchs = window.location.href.split('?'),
 			_temp = [], _self = this, _value;
 		_searchs.shift();
@@ -56,10 +60,15 @@ module.exports = React.createClass({
 		}.bind(this));
 	},
 	__doAuth: function (token){
+		var _hash = zn.react.session.getKeyValue(HASH_KEY);
 		zn.react.session.setKeyValue(TOKEN_KEY, token);
 		this.__initWXJSSDKConfig();
 		this.setState({ token: token });
-		this.props.onAuthSuccess && this.props.onAuthSuccess(token);
+		if(_hash){
+			window.location.hash = _hash;
+			zn.react.session.removeKeyValue(HASH_KEY);
+		}
+		this.props.onAuthSuccess && this.props.onAuthSuccess(token, _hash);
 	},
 	__reLogin: function (){
 		if(this.state.debug){ return false; }

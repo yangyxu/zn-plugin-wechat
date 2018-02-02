@@ -10,7 +10,7 @@ var _exports = {},
     }
 });
 
-['user', 'Login'].forEach(function (path) {
+['user', 'Login', 'UserInfo', 'ZNPluginAdminUserWechatInfo'].forEach(function (path) {
     _path = './' + path;
     _exports[path] = require(_path);
 });
