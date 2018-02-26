@@ -10,23 +10,57 @@ zn.define(['node:chinese-to-pinyin'], function (pinyin) {
                 },
                 value: function (request, response, chain){
                     var _openid = request.getValue('openid'),
-                        _token = request.getValue('token');
+                        _token = request.getValue('token'),
+                        _wechat = null,
+                        _admin = null;
                     this.beginTransaction()
-                        .query('bind data', function (){
+                        .query(zn.sql.select({
+                            table: 'zn_plugin_wechat_user',
+                            where: {
+                                openid: _openid
+                            }
+                        })+zn.sql.select({
+                            table: 'zn_plugin_admin_user',
+                            fields: 'id, name, phone, email, status, avatar_img, zn_id, zn_plugin_wechat_open_id',
+                            where: {
+                                id: _token
+                            }
+                        }))
+                        .query('bind data', function (sql, data){
+                            _wechat = data[0][0];
+                            _admin = data[1][0];
+                            if(!_wechat || !_admin){
+                                return response.error('绑定参数错误'), false;
+                            }
+                            _admin.zn_plugin_wechat_open_id = _openid;
+                            _admin.avatar_img = _admin.avatar_img || _wechat.headimgurl;
+                            _wechat.zn_plugin_admin_user_zn_id = _admin.zn_id;
                             return zn.sql.update({
                                 table: 'zn_plugin_admin_user',
                                 updates: {
-                                    zn_plugin_wechat_open_id: _openid
+                                    zn_plugin_wechat_open_id: _openid,
+                                    avatar_img: _admin.avatar_img || _wechat.headimgurl
                                 },
                                 where: {
                                     id: _token
+                                }
+                            })+zn.sql.update({
+                                table: 'zn_plugin_wechat_user',
+                                updates: {
+                                    zn_plugin_admin_user_zn_id: _admin.zn_id
+                                },
+                                where: {
+                                    openid: _openid
                                 }
                             });
                         }, function (err, data){
                             if(err){
                                 response.error(err.message);
                             }else {
-                                response.success('绑定成功');
+                                response.success({
+                                    admin: _admin,
+                                    wechat: _wechat
+                                });
                             }
                         })
                         .commit()
