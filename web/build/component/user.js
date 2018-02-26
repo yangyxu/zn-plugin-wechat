@@ -25,7 +25,7 @@ module.exports = zn.Class({
                     }, share),
                         _config = zn.extend(data.result, {
                         debug: false,
-                        jsApiList: ['onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone']
+                        jsApiList: ['onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone', 'openLocation', 'getLocation']
                     }, config);
                     wx.config(_config);
                     wx.ready(function () {

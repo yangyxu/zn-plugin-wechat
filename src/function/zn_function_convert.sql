@@ -1,7 +1,7 @@
 set global log_bin_trust_function_creators = 1;
 ----
-DROP FUNCTION IF EXISTS zn_plugin_survey_convert_openid;
-CREATE FUNCTION zn_plugin_survey_convert_openid($openid varchar(50))
+DROP FUNCTION IF EXISTS zn_plugin_wechat_convert_openid;
+CREATE FUNCTION zn_plugin_wechat_convert_openid($openid varchar(50))
 RETURNS VARCHAR(500)
 BEGIN
 DECLARE _temp varchar(500);

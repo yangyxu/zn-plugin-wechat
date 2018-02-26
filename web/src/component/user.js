@@ -30,7 +30,9 @@ module.exports = zn.Class({
                 				'onMenuShareAppMessage',
                 				'onMenuShareQQ',
                 				'onMenuShareWeibo',
-                				'onMenuShareQZone'
+                				'onMenuShareQZone',
+								'openLocation',
+								'getLocation'
                 			]
                         }, config);
                         wx.config(_config);

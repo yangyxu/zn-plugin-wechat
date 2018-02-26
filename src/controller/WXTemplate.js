@@ -25,6 +25,14 @@ zn.define(function () {
                     });
                 }
             },
+            getAllPrivateTemplate: {
+                method: 'GET',
+                value: function (request, response, chain){
+                    zn.wx.accessTokenRequest('template.get_all_private_template').then(function (data){
+                        response.success(data);
+                    });
+                }
+            },
             addTemplate: {
                 method: 'GET/POST',
                 argv: {

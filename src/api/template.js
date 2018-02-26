@@ -10,6 +10,10 @@ zn.define({
             industry_id2: "4"
         }
     },
+    get_all_private_template: {
+        url: '/template/get_all_private_template',
+        method: 'GET'
+    },
     get_industry: {
         url: '/template/get_industry',
         method: 'GET'
