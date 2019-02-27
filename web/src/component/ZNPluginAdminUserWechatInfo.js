@@ -1,3 +1,4 @@
+require('./ZNPluginAdminUserWechatInfo.less');
 var React = require('react');
 var UserInfo = require('./UserInfo.js');
 var QRCode = require('qrcode.react');

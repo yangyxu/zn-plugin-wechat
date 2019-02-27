@@ -1,3 +1,4 @@
+require('./Login.less');
 var React = require('react');
 var TOKEN_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN";
 var HASH_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_HASH";

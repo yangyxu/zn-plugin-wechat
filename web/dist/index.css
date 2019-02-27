@@ -1,0 +1,71 @@
+.zn-plugin-wechat-login {
+  text-align: center;
+  line-height: 30px;
+  font-weight: 200px;
+}
+.zn-plugin-wechat-user-info {
+  padding: 20px;
+}
+.zn-plugin-wechat-user-info .wechat-user .base-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px;
+}
+.zn-plugin-wechat-user-info .wechat-user .base-info .avatar {
+  border-radius: 128px;
+  width: 128px;
+  height: 128px;
+  padding: 5px;
+  margin: 10px;
+}
+.zn-plugin-wechat-user-info .wechat-user .base-info .name {
+  font-weight: 400;
+  font-size: 18px;
+}
+.zn-plugin-wechat-user-info .wechat-user .base-info .address {
+  font-weight: 200;
+  font-size: 12px;
+}
+.zn-plugin-wechat-user-info .wechat-user .count {
+  font-size: 16px;
+  font-weight: bolder;
+  padding-left: 5px;
+}
+.zn-plugin-wechat-user-info .wechat-user .count .value {
+  color: #800010;
+}
+.zn-plugin-wechat-user-info .wechat-user .logs .log {
+  height: 40px;
+  border-left: 3px solid #f0ad4e;
+  background-color: #f0f0ee;
+  margin-top: 3px;
+  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  font-weight: 200;
+}
+.zn-plugin-wechat-user-info .wechat-user .logs .log .time {
+  color: #d9534f;
+  font-weight: 500;
+}
+.zn-plugin-wechat-user-info .wechat-user .logs .log:hover {
+  background-color: #e6e6e6;
+}
+.zn-plugin-wechat-zn-plugin-admin-wechat-user-info .qr-code {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.zn-plugin-wechat-zn-plugin-admin-wechat-user-info .qr-code .title {
+  font-size: 18px;
+  font-weight: bold;
+}
+.zn-plugin-wechat-zn-plugin-admin-wechat-user-info .qr-code .tip {
+  line-height: 24px;
+  font-weight: 200;
+  color: #d9534f;
+}
