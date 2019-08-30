@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = zn.Class({
-  static: true,
+  "static": true,
   methods: {
     getAuthorizeURL: function getAuthorizeURL(data, success, error) {
       return zn.http.post('/zn.plugin.wechat/wx/getAuthorizeURL', zn.extend({
