@@ -16,7 +16,8 @@ module.exports = React.createClass({
 		this.__validate();
 	},
 	__validate: function (){
-		if(!this.state.token){
+		var _token = zn.react.session.jsonKeyValue(TOKEN_KEY);
+		if(!_token){
 			this.__parseHash();
 			if(this.state.code){
 				this.__loginWithWeChatCode();
@@ -24,7 +25,19 @@ module.exports = React.createClass({
 				this.__reLogin();
 			}
 		}else {
-			this.__doAuth(this.state.token);
+			zn.http.post('/zn.plugin.wechat/user/getWXUserByOpenid',{
+				openid: _token.openid
+			}).then(function (data){
+				if(data.status==200){
+					this.__doAuth(_token);
+				}else {
+					zn.react.session.removeKeyValue(TOKEN_KEY);
+					zn.notification.error(data.result);
+					this.__reLogin();
+				}
+			}.bind(this), function (err){
+				zn.notification.error("网络请求失败");
+			});
 		}
 	},
 	__parseHash: function (){

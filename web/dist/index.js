@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -94,7 +94,7 @@
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(14);
+__webpack_require__(11);
 
 var React = __webpack_require__(0);
 
@@ -165,6 +165,479 @@ module.exports = React.createClass({
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports) {
+
+module.exports = {
+	MODE_NUMBER :		1 << 0,
+	MODE_ALPHA_NUM : 	1 << 1,
+	MODE_8BIT_BYTE : 	1 << 2,
+	MODE_KANJI :		1 << 3
+};
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var math = __webpack_require__(5);
+
+function QRPolynomial(num, shift) {
+
+	if (num.length == undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] == 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= math.gexp(math.glog(this.get(i) ) + math.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = math.glog(this.get(0) ) - math.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var i = 0; i < e.getLength(); i++) {
+			num[i] ^= math.gexp(math.glog(e.get(i) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+zn.plugin.wechat = __webpack_require__(7);
+module.exports = zn.react.extendPath('/znpluginwechat.', __webpack_require__(23));
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var _exports = {},
+    _export = null,
+    _path = null;
+var _data = {
+  user: __webpack_require__(8),
+  Login: __webpack_require__(9),
+  UserInfo: __webpack_require__(1),
+  ZNPluginAdminUserWechatInfo: __webpack_require__(12)
+};
+Object.keys(_data).map(function (path) {
+  _exports[path.toLowerCase()] = _exports[path] = _data[path];
+});
+
+_exports.getToken = function () {
+  return zn.react.session.jsonKeyValue("ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN");
+};
+
+module.exports = _exports;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = zn.Class({
+  "static": true,
+  methods: {
+    getAuthorizeURL: function getAuthorizeURL(data, success, error) {
+      return zn.http.post('/zn.plugin.wechat/wx/getAuthorizeURL', zn.extend({
+        redirect_url: encodeURIComponent(window.location.origin + window.location.pathname)
+      }, data)).then(success, error), this;
+    },
+    loginByCode: function loginByCode(code, success, error) {
+      return zn.http.post('/zn.plugin.wechat/user/loginByCode', {
+        code: code
+      }).then(success, error), this;
+    },
+    initJSSDKConfig: function initJSSDKConfig(share, config) {
+      zn.http.post('/zn.plugin.wechat/wx/getJSSDKConfig', {
+        url: encodeURIComponent(window.location.origin + window.location.pathname)
+      }).then(function (data) {
+        if (data.status == 200) {
+          var _share = zn.extend({
+            title: '',
+            // 分享标题
+            desc: '',
+            // 分享内容描述
+            link: '',
+            // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            imgUrl: '',
+            // 分享图标
+            success: function success() {}
+          }, share),
+              _config = zn.extend(data.result, {
+            debug: false,
+            jsApiList: ['onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone', 'openLocation', 'getLocation']
+          }, config);
+
+          wx.config(_config);
+          wx.ready(function () {
+            wx.onMenuShareTimeline(_share);
+            wx.onMenuShareAppMessage(_share);
+            wx.onMenuShareQQ(_share);
+            wx.onMenuShareWeibo(_share);
+            wx.onMenuShareQZone(_share);
+          });
+        } else {
+          zn.notification.error(data.result);
+        }
+
+        return this;
+      });
+    }
+  }
+});
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(10);
+
+var React = __webpack_require__(0);
+
+var TOKEN_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN";
+var HASH_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_HASH";
+module.exports = React.createClass({
+  displayName: "exports",
+  getInitialState: function getInitialState() {
+    return {
+      loading: false,
+      debug: this.props.debug || 0,
+      state: 1,
+      code: null,
+      token: zn.react.session.jsonKeyValue(TOKEN_KEY)
+    };
+  },
+  componentDidMount: function componentDidMount() {
+    this.__validate();
+  },
+  __validate: function __validate() {
+    var _token = zn.react.session.jsonKeyValue(TOKEN_KEY);
+
+    if (!_token) {
+      this.__parseHash();
+
+      if (this.state.code) {
+        this.__loginWithWeChatCode();
+      } else {
+        this.__reLogin();
+      }
+    } else {
+      zn.http.post('/zn.plugin.wechat/user/getWXUserByOpenid', {
+        openid: _token.openid
+      }).then(function (data) {
+        if (data.status == 200) {
+          this.__doAuth(_token);
+        } else {
+          zn.react.session.removeKeyValue(TOKEN_KEY);
+          zn.notification.error(data.result);
+
+          this.__reLogin();
+        }
+      }.bind(this), function (err) {
+        zn.notification.error("网络请求失败");
+      });
+    }
+  },
+  __parseHash: function __parseHash() {
+    if (window.location.hash) {
+      zn.react.session.setKeyValue(HASH_KEY, window.location.hash);
+    }
+
+    var _searchs = window.location.href.split('?'),
+        _temp = [],
+        _self = this,
+        _value;
+
+    _searchs.shift();
+
+    _searchs.forEach(function (search) {
+      if (search.indexOf('#/') != -1) {
+        search = search.split('#/')[0];
+      }
+
+      search.split('&').forEach(function (value) {
+        _temp = value.split('=');
+        _value = _temp[1];
+
+        if (_temp[0] == 'code') {
+          _self.state.debug = 0;
+        }
+
+        _self.state[_temp[0]] = _value;
+      });
+    });
+  },
+  __loginWithWeChatCode: function __loginWithWeChatCode() {
+    this.setState({
+      loading: true
+    });
+    zn.plugin.wechat.user.loginByCode(this.state.code, function (data) {
+      if (data.status == 200) {
+        this.__doAuth(data.result);
+      } else {
+        this.__reLogin();
+      }
+    }.bind(this), function () {
+      this.__reLogin();
+    }.bind(this));
+  },
+  __doAuth: function __doAuth(token) {
+    var _hash = zn.react.session.getKeyValue(HASH_KEY);
+
+    zn.react.session.setKeyValue(TOKEN_KEY, token);
+
+    this.__initWXJSSDKConfig();
+
+    this.setState({
+      token: token
+    });
+
+    if (_hash) {
+      window.location.hash = _hash;
+      zn.react.session.removeKeyValue(HASH_KEY);
+    }
+
+    this.props.onAuthSuccess && this.props.onAuthSuccess(token, _hash);
+  },
+  __reLogin: function __reLogin() {
+    if (this.state.debug) {
+      return false;
+    }
+
+    zn.plugin.wechat.user.getAuthorizeURL({
+      redirect_state: this.state.state
+    }, function (data) {
+      if (data.result) {
+        window.location.href = data.result;
+      } else {
+        zn.notification.error('后台服务不可用');
+      }
+    }, function () {
+      zn.notification.error('后台服务不可用');
+    });
+  },
+  __initWXJSSDKConfig: function __initWXJSSDKConfig() {
+    zn.plugin.wechat.user.initJSSDKConfig();
+  },
+  render: function render() {
+    if (!this.state.token) {
+      return React.createElement(zn.react.DataLoader, {
+        loader: "timer",
+        content: "\u8BA4\u8BC1\u4E2D..."
+      });
+    }
+
+    if (this.state.loading) {
+      return React.createElement(zn.react.DataLoader, {
+        loader: "timer",
+        content: "\u767B\u9646\u4E2D..."
+      });
+    } else {
+      return React.createElement("div", {
+        className: "zn-plugin-wechat-login"
+      }, "\u8BA4\u8BC1\u6210\u529F");
+    }
+  }
+});
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(13);
+
+var React = __webpack_require__(0);
+
+var UserInfo = __webpack_require__(1);
+
+var QRCode = __webpack_require__(14);
+
+module.exports = React.createClass({
+  displayName: "exports",
+  getInitialState: function getInitialState() {
+    return {
+      isReset: false
+    };
+  },
+  __renderQRCode: function __renderQRCode() {
+    var _this = this;
+
+    console.log(window.location.origin + window.location.pathname.replace('admin.html', 'index.html') + "#/znpluginwechat.user.bind?token=" + zn.plugin.admin.getToken().id);
+    return React.createElement("div", {
+      className: "qr-code"
+    }, React.createElement("div", {
+      className: "title"
+    }, "\u5FAE\u4FE1\u626B\u4E00\u626B"), React.createElement(QRCode, {
+      value: window.location.origin + window.location.pathname.replace('admin.html', 'index.html') + "#/znpluginwechat.user.bind?token=" + zn.plugin.admin.getToken().id
+    }), React.createElement("div", {
+      className: "tip"
+    }, "\u7ED1\u5B9A\u5FAE\u4FE1\u53F7"), this.props.openid && React.createElement(zn.react.Button, {
+      style: {
+        width: 140
+      },
+      onClick: function onClick() {
+        return _this.setState({
+          isReset: false
+        });
+      },
+      text: "\u53D6\u6D88",
+      status: "danger"
+    }));
+  },
+  render: function render() {
+    var _this2 = this;
+
+    return React.createElement("div", {
+      className: "zn-plugin-wechat-zn-plugin-admin-wechat-user-info"
+    }, this.props.openid && !this.state.isReset ? React.createElement("div", {
+      className: "user"
+    }, React.createElement(UserInfo, {
+      openid: this.props.openid
+    }), React.createElement(zn.react.Button, {
+      style: {
+        margin: 20
+      },
+      onClick: function onClick() {
+        return _this2.setState({
+          isReset: true
+        });
+      },
+      text: "\u91CD\u65B0\u7ED1\u5B9A"
+    })) : this.__renderQRCode());
+  }
+});
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -200,13 +673,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var React = __webpack_require__(0);
 
-var PropTypes = __webpack_require__(17); // qr.js doesn't handle error level of zero (M) so we need to do it right,
+var PropTypes = __webpack_require__(15); // qr.js doesn't handle error level of zero (M) so we need to do it right,
 // thus the deep require.
 
 
-var QRCodeImpl = __webpack_require__(20);
+var QRCodeImpl = __webpack_require__(18);
 
-var ErrorCorrectLevel = __webpack_require__(4); // Convert from UTF-16, forcing the use of byte-mode encoding in our QR Code.
+var ErrorCorrectLevel = __webpack_require__(3); // Convert from UTF-16, forcing the use of byte-mode encoding in our QR Code.
 // This allows us to encode Hanji, Kanji, emoji, etc. Ideally we'd do more
 // detection and not resort to byte-mode if possible, but we're trading off
 // a smaller library for a smaller amount of data we can potentially encode.
@@ -523,481 +996,7 @@ QRCode.defaultProps = _objectSpread({
 module.exports = QRCode;
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = {
-	MODE_NUMBER :		1 << 0,
-	MODE_ALPHA_NUM : 	1 << 1,
-	MODE_8BIT_BYTE : 	1 << 2,
-	MODE_KANJI :		1 << 3
-};
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = {
-	L : 1,
-	M : 0,
-	Q : 3,
-	H : 2
-};
-
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var math = __webpack_require__(6);
-
-function QRPolynomial(num, shift) {
-
-	if (num.length == undefined) {
-		throw new Error(num.length + "/" + shift);
-	}
-
-	var offset = 0;
-
-	while (offset < num.length && num[offset] == 0) {
-		offset++;
-	}
-
-	this.num = new Array(num.length - offset + shift);
-	for (var i = 0; i < num.length - offset; i++) {
-		this.num[i] = num[i + offset];
-	}
-}
-
-QRPolynomial.prototype = {
-
-	get : function(index) {
-		return this.num[index];
-	},
-	
-	getLength : function() {
-		return this.num.length;
-	},
-	
-	multiply : function(e) {
-	
-		var num = new Array(this.getLength() + e.getLength() - 1);
-	
-		for (var i = 0; i < this.getLength(); i++) {
-			for (var j = 0; j < e.getLength(); j++) {
-				num[i + j] ^= math.gexp(math.glog(this.get(i) ) + math.glog(e.get(j) ) );
-			}
-		}
-	
-		return new QRPolynomial(num, 0);
-	},
-	
-	mod : function(e) {
-	
-		if (this.getLength() - e.getLength() < 0) {
-			return this;
-		}
-	
-		var ratio = math.glog(this.get(0) ) - math.glog(e.get(0) );
-	
-		var num = new Array(this.getLength() );
-		
-		for (var i = 0; i < this.getLength(); i++) {
-			num[i] = this.get(i);
-		}
-		
-		for (var i = 0; i < e.getLength(); i++) {
-			num[i] ^= math.gexp(math.glog(e.get(i) ) + ratio);
-		}
-	
-		// recursive call
-		return new QRPolynomial(num, 0).mod(e);
-	}
-};
-
-module.exports = QRPolynomial;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-var QRMath = {
-
-	glog : function(n) {
-	
-		if (n < 1) {
-			throw new Error("glog(" + n + ")");
-		}
-		
-		return QRMath.LOG_TABLE[n];
-	},
-	
-	gexp : function(n) {
-	
-		while (n < 0) {
-			n += 255;
-		}
-	
-		while (n >= 256) {
-			n -= 255;
-		}
-	
-		return QRMath.EXP_TABLE[n];
-	},
-	
-	EXP_TABLE : new Array(256),
-	
-	LOG_TABLE : new Array(256)
-
-};
-	
-for (var i = 0; i < 8; i++) {
-	QRMath.EXP_TABLE[i] = 1 << i;
-}
-for (var i = 8; i < 256; i++) {
-	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
-		^ QRMath.EXP_TABLE[i - 5]
-		^ QRMath.EXP_TABLE[i - 6]
-		^ QRMath.EXP_TABLE[i - 8];
-}
-for (var i = 0; i < 255; i++) {
-	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
-}
-
-module.exports = QRMath;
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = zn.arrayValueToObject(['Base', 'Config'], function (value, index) {
-  return __webpack_require__(26)("./" + value + ".js");
-});
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = zn.arrayValueToObject(['Bind', 'Info', 'List', 'LoginLog'], function (value, index) {
-  return __webpack_require__(29)("./" + value + ".js");
-});
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-zn.plugin.wechat = __webpack_require__(10);
-module.exports = zn.react.extendPath('/znpluginwechat.', __webpack_require__(25));
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var _exports = {},
-    _export = null,
-    _path = null;
-var _data = {
-  user: __webpack_require__(11),
-  Login: __webpack_require__(12),
-  UserInfo: __webpack_require__(1),
-  ZNPluginAdminUserWechatInfo: __webpack_require__(15)
-};
-Object.keys(_data).map(function (path) {
-  _exports[path.toLowerCase()] = _data[path];
-});
-
-_exports.getToken = function () {
-  return zn.react.session.jsonKeyValue("ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN");
-};
-
-module.exports = _exports;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-module.exports = zn.Class({
-  "static": true,
-  methods: {
-    getAuthorizeURL: function getAuthorizeURL(data, success, error) {
-      return zn.http.post('/zn.plugin.wechat/wx/getAuthorizeURL', zn.extend({
-        redirect_url: encodeURIComponent(window.location.origin + window.location.pathname)
-      }, data)).then(success, error), this;
-    },
-    loginByCode: function loginByCode(code, success, error) {
-      return zn.http.post('/zn.plugin.wechat/user/loginByCode', {
-        code: code
-      }).then(success, error), this;
-    },
-    initJSSDKConfig: function initJSSDKConfig(share, config) {
-      zn.http.post('/zn.plugin.wechat/wx/getJSSDKConfig', {
-        url: encodeURIComponent(window.location.origin + window.location.pathname)
-      }).then(function (data) {
-        if (data.status == 200) {
-          var _share = zn.extend({
-            title: '',
-            // 分享标题
-            desc: '',
-            // 分享内容描述
-            link: '',
-            // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
-            imgUrl: '',
-            // 分享图标
-            success: function success() {}
-          }, share),
-              _config = zn.extend(data.result, {
-            debug: false,
-            jsApiList: ['onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone', 'openLocation', 'getLocation']
-          }, config);
-
-          wx.config(_config);
-          wx.ready(function () {
-            wx.onMenuShareTimeline(_share);
-            wx.onMenuShareAppMessage(_share);
-            wx.onMenuShareQQ(_share);
-            wx.onMenuShareWeibo(_share);
-            wx.onMenuShareQZone(_share);
-          });
-        } else {
-          zn.notification.error(data.result);
-        }
-
-        return this;
-      });
-    }
-  }
-});
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(13);
-
-var React = __webpack_require__(0);
-
-var TOKEN_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_TOKEN";
-var HASH_KEY = "ZN_PLUGIN_WECHAT_USER_LOGIN_HASH";
-module.exports = React.createClass({
-  displayName: "exports",
-  getInitialState: function getInitialState() {
-    return {
-      loading: false,
-      debug: this.props.debug || 0,
-      state: 1,
-      code: null,
-      token: zn.react.session.jsonKeyValue(TOKEN_KEY)
-    };
-  },
-  componentDidMount: function componentDidMount() {
-    this.__validate();
-  },
-  __validate: function __validate() {
-    if (!this.state.token) {
-      this.__parseHash();
-
-      if (this.state.code) {
-        this.__loginWithWeChatCode();
-      } else {
-        this.__reLogin();
-      }
-    } else {
-      this.__doAuth(this.state.token);
-    }
-  },
-  __parseHash: function __parseHash() {
-    if (window.location.hash) {
-      zn.react.session.setKeyValue(HASH_KEY, window.location.hash);
-    }
-
-    var _searchs = window.location.href.split('?'),
-        _temp = [],
-        _self = this,
-        _value;
-
-    _searchs.shift();
-
-    _searchs.forEach(function (search) {
-      if (search.indexOf('#/') != -1) {
-        search = search.split('#/')[0];
-      }
-
-      search.split('&').forEach(function (value) {
-        _temp = value.split('=');
-        _value = _temp[1];
-
-        if (_temp[0] == 'code') {
-          _self.state.debug = 0;
-        }
-
-        _self.state[_temp[0]] = _value;
-      });
-    });
-  },
-  __loginWithWeChatCode: function __loginWithWeChatCode() {
-    this.setState({
-      loading: true
-    });
-    zn.plugin.wechat.user.loginByCode(this.state.code, function (data) {
-      if (data.status == 200) {
-        this.__doAuth(data.result);
-      } else {
-        this.__reLogin();
-      }
-    }.bind(this), function () {
-      this.__reLogin();
-    }.bind(this));
-  },
-  __doAuth: function __doAuth(token) {
-    var _hash = zn.react.session.getKeyValue(HASH_KEY);
-
-    zn.react.session.setKeyValue(TOKEN_KEY, token);
-
-    this.__initWXJSSDKConfig();
-
-    this.setState({
-      token: token
-    });
-
-    if (_hash) {
-      window.location.hash = _hash;
-      zn.react.session.removeKeyValue(HASH_KEY);
-    }
-
-    this.props.onAuthSuccess && this.props.onAuthSuccess(token, _hash);
-  },
-  __reLogin: function __reLogin() {
-    if (this.state.debug) {
-      return false;
-    }
-
-    zn.plugin.wechat.user.getAuthorizeURL({
-      redirect_state: this.state.state
-    }, function (data) {
-      if (data.result) {
-        window.location.href = data.result;
-      } else {
-        zn.notification.error('后台服务不可用');
-      }
-    }, function () {
-      zn.notification.error('后台服务不可用');
-    });
-  },
-  __initWXJSSDKConfig: function __initWXJSSDKConfig() {
-    zn.plugin.wechat.user.initJSSDKConfig();
-  },
-  render: function render() {
-    if (!this.state.token) {
-      return React.createElement(zn.react.DataLoader, {
-        loader: "timer",
-        content: "\u8BA4\u8BC1\u4E2D..."
-      });
-    }
-
-    if (this.state.loading) {
-      return React.createElement(zn.react.DataLoader, {
-        loader: "timer",
-        content: "\u767B\u9646\u4E2D..."
-      });
-    } else {
-      return React.createElement("div", {
-        className: "zn-plugin-wechat-login"
-      }, "\u8BA4\u8BC1\u6210\u529F");
-    }
-  }
-});
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
 /* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(16);
-
-var React = __webpack_require__(0);
-
-var UserInfo = __webpack_require__(1);
-
-var QRCode = __webpack_require__(2);
-
-module.exports = React.createClass({
-  displayName: "exports",
-  getInitialState: function getInitialState() {
-    return {
-      isReset: false
-    };
-  },
-  __renderQRCode: function __renderQRCode() {
-    var _this = this;
-
-    console.log(window.location.origin + window.location.pathname.replace('admin.html', 'index.html') + "#/znpluginwechat.user.bind?token=" + zn.plugin.admin.getToken().id);
-    return React.createElement("div", {
-      className: "qr-code"
-    }, React.createElement("div", {
-      className: "title"
-    }, "\u5FAE\u4FE1\u626B\u4E00\u626B"), React.createElement(QRCode, {
-      value: window.location.origin + window.location.pathname.replace('admin.html', 'index.html') + "#/znpluginwechat.user.bind?token=" + zn.plugin.admin.getToken().id
-    }), React.createElement("div", {
-      className: "tip"
-    }, "\u7ED1\u5B9A\u5FAE\u4FE1\u53F7"), this.props.openid && React.createElement(zn.react.Button, {
-      style: {
-        width: 140
-      },
-      onClick: function onClick() {
-        return _this.setState({
-          isReset: false
-        });
-      },
-      text: "\u53D6\u6D88",
-      status: "danger"
-    }));
-  },
-  render: function render() {
-    var _this2 = this;
-
-    return React.createElement("div", {
-      className: "zn-plugin-wechat-zn-plugin-admin-wechat-user-info"
-    }, this.props.openid && !this.state.isReset ? React.createElement("div", {
-      className: "user"
-    }, React.createElement(UserInfo, {
-      openid: this.props.openid
-    }), React.createElement(zn.react.Button, {
-      style: {
-        margin: 20
-      },
-      onClick: function onClick() {
-        return _this2.setState({
-          isReset: true
-        });
-      },
-      text: "\u91CD\u65B0\u7ED1\u5B9A"
-    })) : this.__renderQRCode());
-  }
-});
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1010,12 +1009,12 @@ module.exports = React.createClass({
 if (false) { var throwOnDirectAccess, ReactIs; } else {
   // By explicitly using `prop-types` you are opting into new production behavior.
   // http://fb.me/prop-types-in-prod
-  module.exports = __webpack_require__(18)();
+  module.exports = __webpack_require__(16)();
 }
 
 
 /***/ }),
-/* 18 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1028,7 +1027,7 @@ if (false) { var throwOnDirectAccess, ReactIs; } else {
 
 
 
-var ReactPropTypesSecret = __webpack_require__(19);
+var ReactPropTypesSecret = __webpack_require__(17);
 
 function emptyFunction() {}
 function emptyFunctionWithReset() {}
@@ -1086,7 +1085,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 19 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1105,14 +1104,14 @@ module.exports = ReactPropTypesSecret;
 
 
 /***/ }),
-/* 20 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var BitByte = __webpack_require__(21);
-var RSBlock = __webpack_require__(22);
-var BitBuffer = __webpack_require__(23);
-var util = __webpack_require__(24);
-var Polynomial = __webpack_require__(5);
+var BitByte = __webpack_require__(19);
+var RSBlock = __webpack_require__(20);
+var BitBuffer = __webpack_require__(21);
+var util = __webpack_require__(22);
+var Polynomial = __webpack_require__(4);
 
 function QRCode(typeNumber, errorCorrectLevel) {
 	this.typeNumber = typeNumber;
@@ -1549,10 +1548,10 @@ module.exports = QRCode;
 
 
 /***/ }),
-/* 21 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var mode = __webpack_require__(3);
+var mode = __webpack_require__(2);
 
 function QR8bitByte(data) {
 	this.mode = mode.MODE_8BIT_BYTE;
@@ -1578,11 +1577,11 @@ module.exports = QR8bitByte;
 
 
 /***/ }),
-/* 22 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // ErrorCorrectLevel
-var ECL = __webpack_require__(4);
+var ECL = __webpack_require__(3);
 
 function QRRSBlock(totalCount, dataCount) {
 	this.totalCount = totalCount;
@@ -1883,7 +1882,7 @@ module.exports = QRRSBlock;
 
 
 /***/ }),
-/* 23 */
+/* 21 */
 /***/ (function(module, exports) {
 
 function QRBitBuffer() {
@@ -1927,12 +1926,12 @@ module.exports = QRBitBuffer;
 
 
 /***/ }),
-/* 24 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Mode = __webpack_require__(3);
-var Polynomial = __webpack_require__(5);
-var math = __webpack_require__(6);
+var Mode = __webpack_require__(2);
+var Polynomial = __webpack_require__(4);
+var math = __webpack_require__(5);
 
 var QRMaskPattern = {
 	PATTERN000 : 0,
@@ -2212,15 +2211,15 @@ module.exports = QRUtil;
 
 
 /***/ }),
-/* 25 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var _exports = {},
     _export = null,
     _path = null;
 var _data = {
-  setting: __webpack_require__(7),
-  user: __webpack_require__(8)
+  setting: __webpack_require__(24),
+  user: __webpack_require__(27)
 };
 Object.keys(_data).map(function (path) {
   _export = _data[path];
@@ -2230,8 +2229,8 @@ Object.keys(_data).map(function (path) {
   }
 });
 var _data = {
-  AdminUserAuth: __webpack_require__(35),
-  AdminUserLoginWithQRCode: __webpack_require__(36)
+  AdminUserAuth: __webpack_require__(32),
+  AdminUserLoginWithQRCode: __webpack_require__(33)
 };
 Object.keys(_data).map(function (path) {
   _exports[path.toLowerCase()] = _data[path];
@@ -2239,37 +2238,16 @@ Object.keys(_data).map(function (path) {
 module.exports = _exports;
 
 /***/ }),
-/* 26 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var map = {
-	"./Base.js": 27,
-	"./Config.js": 28,
-	"./index.js": 7
+module.exports = {
+  'Base': __webpack_require__(25),
+  'Config': __webpack_require__(26)
 };
-
-
-function webpackContext(req) {
-	var id = webpackContextResolve(req);
-	return __webpack_require__(id);
-}
-function webpackContextResolve(req) {
-	if(!__webpack_require__.o(map, req)) {
-		var e = new Error("Cannot find module '" + req + "'");
-		e.code = 'MODULE_NOT_FOUND';
-		throw e;
-	}
-	return map[req];
-}
-webpackContext.keys = function webpackContextKeys() {
-	return Object.keys(map);
-};
-webpackContext.resolve = webpackContextResolve;
-module.exports = webpackContext;
-webpackContext.id = 26;
 
 /***/ }),
-/* 27 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2331,7 +2309,7 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 28 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2549,40 +2527,18 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 29 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var map = {
-	"./Bind.js": 30,
-	"./Info.js": 31,
-	"./List.js": 32,
-	"./LoginLog.js": 33,
-	"./ZNPluginAdminUserBind.js": 34,
-	"./index.js": 8
+module.exports = {
+  'Bind': __webpack_require__(28),
+  'Info': __webpack_require__(29),
+  'List': __webpack_require__(30),
+  'LoginLog': __webpack_require__(31)
 };
-
-
-function webpackContext(req) {
-	var id = webpackContextResolve(req);
-	return __webpack_require__(id);
-}
-function webpackContextResolve(req) {
-	if(!__webpack_require__.o(map, req)) {
-		var e = new Error("Cannot find module '" + req + "'");
-		e.code = 'MODULE_NOT_FOUND';
-		throw e;
-	}
-	return map[req];
-}
-webpackContext.keys = function webpackContextKeys() {
-	return Object.keys(map);
-};
-webpackContext.resolve = webpackContextResolve;
-module.exports = webpackContext;
-webpackContext.id = 29;
 
 /***/ }),
-/* 30 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2622,6 +2578,8 @@ module.exports = React.createClass({
     }.bind(this));
   },
   render: function render() {
+    var _token = zn.plugin.wechat.getToken();
+
     return React.createElement(zn.react.Page, {
       title: "\u767B\u5F55\u4FE1\u606F",
       canBack: false
@@ -2669,8 +2627,8 @@ module.exports = React.createClass({
         margin: 3
       },
       src: zn.http.fixURL(this.state.wechat.headimgurl)
-    }), this.state.wechat.nickname)), React.createElement(UserInfo, {
-      openid: zn.plugin.wechat.getToken().openid
+    }), this.state.wechat.nickname)), _token && React.createElement(UserInfo, {
+      openid: _token.openid
     }), !this.state.admin && React.createElement(zn.react.Button, {
       style: {
         margin: 20
@@ -2683,7 +2641,7 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 31 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2707,7 +2665,7 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 32 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2846,7 +2804,7 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 33 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2872,47 +2830,7 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var React = __webpack_require__(0);
-
-var QRCode = __webpack_require__(2);
-
-module.exports = React.createClass({
-  displayName: "exports",
-  getInitialState: function getInitialState() {
-    return {
-      user: null,
-      logs: []
-    };
-  },
-  componentDidMount: function componentDidMount() {
-    if (this.props.openid) {
-      this.__loadInfo();
-    }
-  },
-  __loadInfo: function __loadInfo() {
-    zn.http.post('/zn.plugin.wechat/zn.plugin.wechat.user/getInfoWithOpenid', {
-      openid: this.props.openid
-    }).then(function () {});
-  },
-  __renderQRCode: function __renderQRCode() {},
-  render: function render() {
-    return React.createElement("div", {
-      className: "zn-plugin-wechat-user-info"
-    }, React.createElement("div", {
-      className: "info-left"
-    }, React.createElement(QRCode, {
-      value: window.location.origin + window.location.pathname.replace('admin.html', 'index.html') + "#/znpluginwechat.user.bind?znid=" + this.state.user.zn_id
-    })), this.state.user && React.createElement("div", {
-      className: "info-right"
-    }));
-  }
-});
-
-/***/ }),
-/* 35 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);
@@ -2964,7 +2882,7 @@ module.exports = React.createClass({
 });
 
 /***/ }),
-/* 36 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var React = __webpack_require__(0);

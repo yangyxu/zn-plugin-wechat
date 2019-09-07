@@ -37,6 +37,8 @@ module.exports = React.createClass({
     }.bind(this));
   },
   render: function render() {
+    var _token = zn.plugin.wechat.getToken();
+
     return React.createElement(zn.react.Page, {
       title: "\u767B\u5F55\u4FE1\u606F",
       canBack: false
@@ -84,8 +86,8 @@ module.exports = React.createClass({
         margin: 3
       },
       src: zn.http.fixURL(this.state.wechat.headimgurl)
-    }), this.state.wechat.nickname)), React.createElement(UserInfo, {
-      openid: zn.plugin.wechat.getToken().openid
+    }), this.state.wechat.nickname)), _token && React.createElement(UserInfo, {
+      openid: _token.openid
     }), !this.state.admin && React.createElement(zn.react.Button, {
       style: {
         margin: 20

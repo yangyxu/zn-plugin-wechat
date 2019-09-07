@@ -2,6 +2,36 @@ zn.define(function () {
 
     return zn.Controller('user',{
         methods: {
+            getWXUserByOpenid: {
+                method: 'GET/POST',
+                argv: {
+                    openid: null
+                },
+                value: function (request, response, chain){
+                    var _openid = request.getValue('openid');
+                    this.beginTransaction()
+                        .query('select user', function (){
+                            return zn.sql.select({
+                                table: 'zn_plugin_wechat_user',
+                                fields: '*',
+                                where: {
+                                    openid: _openid
+                                }
+                            });
+                        }, function (err, data){
+                            if(err){
+                                response.error(err.message);
+                            }else {
+                                if(data[0]){
+                                    response.success(data[0]);
+                                }else {
+                                    response.error('还未授权');
+                                }
+                            }
+                        })
+                        .commit()
+                }
+            },
             getAuthorizeURL: {
                 method: 'GET/POST',
                 argv: {

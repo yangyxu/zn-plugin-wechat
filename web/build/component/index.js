@@ -10,7 +10,7 @@ var _data = {
   ZNPluginAdminUserWechatInfo: require('./ZNPluginAdminUserWechatInfo.js')
 };
 Object.keys(_data).map(function (path) {
-  _exports[path.toLowerCase()] = _data[path];
+  _exports[path.toLowerCase()] = _exports[path] = _data[path];
 });
 
 _exports.getToken = function () {

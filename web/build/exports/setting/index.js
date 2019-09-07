@@ -1,5 +1,6 @@
 "use strict";
 
-module.exports = zn.arrayValueToObject(['Base', 'Config'], function (value, index) {
-  return require('./' + value + '.js');
-});
+module.exports = {
+  'Base': require('./Base.js'),
+  'Config': require('./Config.js')
+};

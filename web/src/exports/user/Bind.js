@@ -33,6 +33,7 @@ module.exports = React.createClass({
 		}.bind(this));
 	},
 	render:function(){
+		var _token = zn.plugin.wechat.getToken();
 		return (
 			<zn.react.Page title="登录信息" canBack={false} >
 				{
@@ -46,7 +47,7 @@ module.exports = React.createClass({
 						</div>
 					</div>
 				}
-				<UserInfo openid={zn.plugin.wechat.getToken().openid} />
+				{ _token && <UserInfo openid={_token.openid} />}
 				{!this.state.admin && <zn.react.Button style={{margin: 20}} onClick={this.bindAccount} text="绑定" status="warning" />}
 			</zn.react.Page>
 		);

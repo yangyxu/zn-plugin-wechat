@@ -1,8 +1,6 @@
-module.exports = zn.arrayValueToObject([
-    'Bind',
-    'Info',
-    'List',
-    'LoginLog'
-], function (value, index){
-    return require('./'+value+'.js');
-});
+module.exports = {
+    'Bind': require('./Bind.js'),
+    'Info': require('./Info.js'),
+    'List': require('./List.js'),
+    'LoginLog': require('./LoginLog.js')
+};
